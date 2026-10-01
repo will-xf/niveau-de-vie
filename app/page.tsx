@@ -1,16 +1,20 @@
 import { CalculatorForm } from "@/components/CalculatorForm";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { VisitorCounter } from "@/components/VisitorCounter";
 
 export default function Home() {
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 py-8">
       <header className="mb-6">
-        <h1 className="text-xl font-bold text-primary">
-          Niveau de vie — où vous situez-vous ?
-        </h1>
+        <div className="flex items-start justify-between gap-3">
+          <h1 className="text-xl font-bold text-primary">
+            Revenus et niveau de vie
+          </h1>
+          <ThemeToggle />
+        </div>
         <p className="mt-1.5 text-sm leading-relaxed text-secondary">
-          Votre revenu recalculé en niveau de vie, tenant compte de la
-          structure de votre foyer.
+          Les revenus recalculés en niveau de vie pour les rendre comparables,
+          tenant compte de la composition du ménage.
         </p>
       </header>
 

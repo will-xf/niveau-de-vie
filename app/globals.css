@@ -11,6 +11,17 @@
   --accent-soft: rgba(76, 124, 243, 0.14);
 }
 
+[data-theme="light"] {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #eceef2;
+  --border: #d9dce3;
+  --text-primary: #15161b;
+  --text-secondary: #5b6172;
+  --accent: #3563e0;
+  --accent-soft: rgba(53, 99, 224, 0.12);
+}
+
 @theme inline {
   --color-bg: var(--bg);
   --color-surface: var(--surface);
@@ -26,6 +37,10 @@
 html {
   background: var(--bg);
   color-scheme: dark;
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
 }
 
 body {

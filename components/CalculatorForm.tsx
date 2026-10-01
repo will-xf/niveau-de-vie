@@ -155,7 +155,7 @@ export function CalculatorForm() {
     <div className="flex flex-col gap-4">
       <div className={cardClass}>
         <h2 className="mb-1 text-base font-semibold text-primary">
-          Votre foyer
+          Composition du ménage
         </h2>
         <div className="divide-y divide-border">
           <Stepper label="Adultes" value={adults} min={0} onChange={setAdults} />
@@ -173,9 +173,9 @@ export function CalculatorForm() {
       </div>
 
       <div className={cardClass}>
-        <h2 className="text-base font-semibold text-primary">Vos revenus</h2>
+        <h2 className="text-base font-semibold text-primary">Revenus nets mensuels</h2>
         <p className="mb-3 mt-1 text-sm text-secondary">
-          Saisissez par adulte ou pour l&apos;ensemble du foyer
+          Saisissez le revenu total du ménage, ou par adulte.
         </p>
         <SegmentedControl value={incomeMode} onChange={setIncomeMode} />
 

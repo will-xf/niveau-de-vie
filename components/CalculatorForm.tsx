@@ -8,10 +8,11 @@ import {
   formatUnits,
 } from "@/lib/calculations";
 import { LivingStandardBar } from "./LivingStandardBar";
+import { SegmentedControl } from "./SegmentedControl";
 
 type IncomeMode = "household" | "perAdult";
 
-const cardClass = "rounded-3xl bg-surface p-5";
+const cardClass = "rounded-3xl border border-card-border bg-surface p-5";
 
 function Stepper({
   label,
@@ -91,39 +92,6 @@ function AmountField({
   );
 }
 
-function SegmentedControl({
-  value,
-  onChange,
-}: {
-  value: IncomeMode;
-  onChange: (value: IncomeMode) => void;
-}) {
-  const options: { value: IncomeMode; label: string }[] = [
-    { value: "household", label: "Revenu du foyer" },
-    { value: "perAdult", label: "Par adulte" },
-  ];
-
-  return (
-    <div className="flex rounded-full bg-surface-2 p-1">
-      {options.map((opt) => (
-        <button
-          key={opt.value}
-          type="button"
-          onClick={() => onChange(opt.value)}
-          aria-pressed={value === opt.value}
-          className={`flex-1 rounded-full py-2 text-sm font-medium transition ${
-            value === opt.value
-              ? "bg-accent text-white"
-              : "text-secondary"
-          }`}
-        >
-          {opt.label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 export function CalculatorForm() {
   const [adults, setAdults] = useState(1);
   const [childrenOver14, setChildrenOver14] = useState(0);
@@ -177,7 +145,14 @@ export function CalculatorForm() {
         <p className="mb-3 mt-1 text-sm text-secondary">
           Saisissez le revenu total du ménage, ou par adulte.
         </p>
-        <SegmentedControl value={incomeMode} onChange={setIncomeMode} />
+        <SegmentedControl
+          value={incomeMode}
+          onChange={setIncomeMode}
+          options={[
+            { value: "household", label: "Revenu du foyer" },
+            { value: "perAdult", label: "Par adulte" },
+          ]}
+        />
 
         <div className="mt-1 divide-y divide-border">
           {incomeMode === "household" ? (

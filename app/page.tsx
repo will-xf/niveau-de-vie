@@ -28,6 +28,20 @@ export default function Home() {
           Aucune donnée saisie ici n&apos;est enregistrée ni transmise.
         </p>
         <VisitorCounter />
+        <a
+          href="https://www.moving-minds.fr"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mx-auto mt-4 flex w-1/4 flex-col items-center gap-1 text-center"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/mm-logo-dark.png" alt="Moving Minds" className="logo-dark w-full" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/mm-logo-light.png" alt="Moving Minds" className="logo-light w-full" />
+          <span className="whitespace-nowrap underline underline-offset-2">
+            www.moving-minds.fr
+          </span>
+        </a>
       </footer>
     </div>
   );

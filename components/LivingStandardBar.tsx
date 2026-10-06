@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { THRESHOLDS } from "@/lib/constants";
 import { formatEuros } from "@/lib/calculations";
+import { SegmentedControl } from "./SegmentedControl";
 
 interface LivingStandardBarProps {
   consumptionUnits: number;
@@ -9,18 +11,17 @@ interface LivingStandardBarProps {
   householdIncome: number;
 }
 
-const COLUMN_WIDTH = 150;
+const COLUMN_WIDTH = 320;
 const COLUMN_HEIGHT = 440;
 const PAD_TOP = 22;
 const PAD_BOTTOM = 36;
-const TRACK_X = 16;
+const TRACK_X = COLUMN_WIDTH / 2;
 const TOP = PAD_TOP;
 const BOTTOM = COLUMN_HEIGHT - PAD_BOTTOM;
 const TICK_LEN = 9;
 const LABEL_X = TRACK_X + TICK_LEN + 8;
+const USER_LABEL_X = TRACK_X - TICK_LEN - 8;
 const MIN_LABEL_GAP = 34;
-const LABEL_FONT_SIZE = 11;
-const VALUE_FONT_SIZE = 15;
 
 interface RawMarker {
   key: string;
@@ -78,22 +79,24 @@ function layoutColumn(markers: RawMarker[], maxValue: number): PositionedMarker[
 }
 
 function GaugeColumn({
-  title,
   subtitle,
   markers,
   maxValue,
 }: {
-  title: string;
   subtitle: string;
   markers: RawMarker[];
   maxValue: number;
 }) {
-  const positioned = layoutColumn(markers, maxValue);
+  // The user's marker sits left of the track, the benchmarks on the right,
+  // so each side is laid out independently.
+  const positioned = [
+    ...layoutColumn(markers.filter((m) => !m.isUser), maxValue),
+    ...layoutColumn(markers.filter((m) => m.isUser), maxValue),
+  ];
 
   return (
-    <div className="min-w-0 flex-1">
-      <p className="text-center text-xs font-medium text-primary">{title}</p>
-      <p className="mb-3 mt-1 text-center text-[10px] leading-tight text-secondary">
+    <div className="min-w-0">
+      <p className="mb-3 text-center text-xs leading-snug text-secondary">
         {subtitle}
       </p>
       <svg
@@ -114,22 +117,25 @@ function GaugeColumn({
         {positioned.map((m) => {
           const nudged = Math.abs(m.y - m.trueY) > 1;
           const tone = m.isUser ? "var(--accent)" : "var(--text-secondary)";
+          const dir = m.isUser ? -1 : 1;
+          const labelX = m.isUser ? USER_LABEL_X : LABEL_X;
+          const anchor = m.isUser ? "end" : "start";
 
           return (
             <g key={m.key}>
               <line
                 x1={TRACK_X}
                 y1={m.trueY}
-                x2={TRACK_X + TICK_LEN}
+                x2={TRACK_X + dir * TICK_LEN}
                 y2={m.trueY}
                 stroke={tone}
                 strokeWidth={m.isUser ? 2 : 1.25}
               />
               {nudged && (
                 <line
-                  x1={TRACK_X + TICK_LEN}
+                  x1={TRACK_X + dir * TICK_LEN}
                   y1={m.trueY}
-                  x2={LABEL_X - 2}
+                  x2={labelX - dir * 2}
                   y2={m.y}
                   stroke="var(--border)"
                   strokeWidth={0.75}
@@ -138,19 +144,19 @@ function GaugeColumn({
               {m.isUser && (
                 <circle cx={TRACK_X} cy={m.trueY} r={3.5} fill="var(--accent)" />
               )}
-              <text x={LABEL_X} y={m.y}>
+              <text x={labelX} y={m.y} textAnchor={anchor}>
                 <tspan
-                  x={LABEL_X}
+                  x={labelX}
                   dy={-8}
-                  fontSize={LABEL_FONT_SIZE}
+                  fontSize={13}
                   fill="var(--text-secondary)"
                 >
                   {m.label}
                 </tspan>
                 <tspan
-                  x={LABEL_X}
-                  dy={16}
-                  fontSize={VALUE_FONT_SIZE}
+                  x={labelX}
+                  dy={20}
+                  fontSize={18}
                   fontWeight={m.isUser ? 700 : 600}
                   fill={m.isUser ? "var(--accent)" : "var(--text-primary)"}
                 >
@@ -160,7 +166,7 @@ function GaugeColumn({
             </g>
           );
         })}
-        <text x={TRACK_X} y={BOTTOM + 20} fontSize={11} fill="var(--text-secondary)">
+        <text x={TRACK_X} y={BOTTOM + 20} textAnchor="middle" fontSize={11} fill="var(--text-secondary)">
           0 €
         </text>
       </svg>
@@ -168,18 +174,14 @@ function GaugeColumn({
   );
 }
 
+type View = "perUnit" | "household";
+
 export function LivingStandardBar({
   consumptionUnits,
   niveauDeVie,
   householdIncome,
 }: LivingStandardBarProps) {
-  const richesse = THRESHOLDS.find((t) => t.key === "richesse")!.value;
-
-  // Both columns share the same (household-level) scale, so the per-unit
-  // figures land at their true fraction of the household ones instead of
-  // each column re-stretching to fill its own height independently.
-  const maxValue =
-    Math.max(richesse * consumptionUnits, householdIncome, 1) * 1.08;
+  const [view, setView] = useState<View>("perUnit");
 
   const perUCMarkers: RawMarker[] = [
     ...THRESHOLDS.map((t) => ({
@@ -188,12 +190,7 @@ export function LivingStandardBar({
       value: t.value,
       isUser: false,
     })),
-    {
-      key: "vous",
-      label: LABELS.vous,
-      value: niveauDeVie,
-      isUser: true,
-    },
+    { key: "vous", label: LABELS.vous, value: niveauDeVie, isUser: true },
   ];
 
   const householdMarkers: RawMarker[] = [
@@ -203,18 +200,17 @@ export function LivingStandardBar({
       value: t.value * consumptionUnits,
       isUser: false,
     })),
-    {
-      key: "vous",
-      label: LABELS.vous,
-      value: householdIncome,
-      isUser: true,
-    },
+    { key: "vous", label: LABELS.vous, value: householdIncome, isUser: true },
   ];
 
-  const multiplier = consumptionUnits.toLocaleString("fr-FR", {
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1,
-  });
+  const richesse = THRESHOLDS.find((t) => t.key === "richesse")!.value;
+  const markers = view === "perUnit" ? perUCMarkers : householdMarkers;
+  const maxValue =
+    Math.max(
+      view === "perUnit" ? richesse : richesse * consumptionUnits,
+      view === "perUnit" ? niveauDeVie : householdIncome,
+      1,
+    ) * 1.08;
 
   return (
     <div>
@@ -222,18 +218,23 @@ export function LivingStandardBar({
         Votre niveau de vie est de {formatEuros(niveauDeVie)} par unité de
         consommation, soit {formatEuros(householdIncome)} pour votre foyer.
       </p>
-      <div className="flex gap-3">
+      <h2 className="mb-3 text-base font-semibold text-primary">Niveau de vie</h2>
+      <SegmentedControl
+        value={view}
+        onChange={setView}
+        options={[
+          { value: "perUnit", label: "Par unité" },
+          { value: "household", label: "Pour le ménage" },
+        ]}
+      />
+      <div className="mt-4">
         <GaugeColumn
-          title="Niveau de vie par unité de consommation"
-          subtitle="En euro-équivalents, permet de comparer entre ménages de structure différente."
-          markers={perUCMarkers}
-          maxValue={maxValue}
-        />
-        <div className="w-px shrink-0 self-stretch bg-border" />
-        <GaugeColumn
-          title={`Niveau de vie pour le foyer (× ${multiplier})`}
-          subtitle="En euros réels, permet de comparer les ménages de structure identique."
-          markers={householdMarkers}
+          subtitle={
+            view === "perUnit"
+              ? "En euro-équivalents, permet de comparer entre ménages de structure différente."
+              : "En euros réels, permet de comparer les ménages de structure identique."
+          }
+          markers={markers}
           maxValue={maxValue}
         />
       </div>

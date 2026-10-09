@@ -5,9 +5,9 @@ export interface Threshold {
 }
 
 export const THRESHOLDS: Threshold[] = [
-  { key: "pauvrete", label: "Seuil de pauvreté", value: 1288 },
-  { key: "mediane", label: "Niveau de vie médian", value: 2147 },
-  { key: "richesse", label: "Seuil de richesse", value: 4292 },
+  { key: "pauvrete", label: "Seuil de pauvreté", value: 1114 },
+  { key: "mediane", label: "Niveau de vie médian", value: 2228 },
+  { key: "richesse", label: "Seuil de richesse", value: 4456 },
 ];
 
 export const UC_WEIGHTS = {
